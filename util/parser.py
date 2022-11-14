@@ -17,7 +17,8 @@ class ParsingPattern:
     )
 
 
-def parse_rule_expr(func_expr: str) -> dict:
+# lexpr: left expression, likes Round(Float($avg), 2)
+def parse_rule_lexpr(func_expr: str) -> dict:
     lparen = ParsingPattern.LEFT_BRACKET.suppress()
     rparen = ParsingPattern.RIGHT_BRACKET.suppress()
 
