@@ -1,6 +1,6 @@
 import math
-
 import pandas
+from typing import Dict
 from typing import Callable
 
 
@@ -8,6 +8,7 @@ from typing import Callable
 Square: Callable = lambda x: math.pow(x, 2)
 Pow: Callable = lambda x, n: math.pow(x, n)
 Sqrt: Callable = math.sqrt
+Abs: Callable = abs
 # n to 1
 Min: Callable = pandas.DataFrame.min
 Max: Callable = pandas.DataFrame.max
@@ -32,3 +33,13 @@ Number4: Callable = lambda x: pandas.Series.map(x, lambda e: round(float(e), 4))
 String: Callable = lambda x: pandas.Series.map(x, str)
 SquareAll: Callable = lambda x: pandas.Series.map(x, Square)
 SqrtAll: Callable = lambda x: pandas.Series.map(x, Sqrt)
+AbsAll: Callable = lambda x: pandas.Series.map(x, Abs)
+# system
+System: Dict[str, Callable] = {
+    "round": round,
+    "max": max,
+    "min": min,
+    "square": lambda x: x**2,
+    "sqrt": math.sqrt,
+    "abs": abs,
+}
