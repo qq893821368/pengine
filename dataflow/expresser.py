@@ -1,5 +1,4 @@
-import attr
-from typing import Any
+import pandas
 from typing import Callable
 from util import mapper
 
@@ -8,7 +7,6 @@ class LeftExpression:
     def __init__(self, lexpr: dict):
         self._func_: Callable
         self._args_: list = []
-        self._cures_: Any = None  # current result
 
         func: str = lexpr.get("function")
         if len(func) > 0:
@@ -26,7 +24,15 @@ class LeftExpression:
             else:
                 self._args_.append(arg)
 
-    @property
-    def current_result(self):
-        return self.current_result
-
+    def map(self, data: pandas.DataFrame):
+        # recursively call self._func_(*self._args_)
+        # if a str that startswith $ in self._args_, transfers it to data[arg]
+        args = self._args_.copy()
+        for i in range(len(args)):
+            if type(args[i]) is str and args[i].startswith("$"):
+                args[i] = data[args[i]]
+            elif isinstance(args[i], LeftExpression):
+                args[i] = args[i].map(data)
+        return self._func_(*args)
+        # todo test with real data
+        pass
