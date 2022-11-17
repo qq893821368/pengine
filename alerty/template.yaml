@@ -36,7 +36,7 @@ rule:
     type: "expr" # str 规则类型，expr表达式，code可执行py代码，默认为表达式
     value: "Avg($loss_rate) lte 5.0" # $variable取数据中的某个字段，用嵌套函数包围做映射，例如求均值、最值等，后接表达式及阈值，形成A expr B的形式表达一个条件
   complex:
-    value: "round(Mean(Last(3, Round(Float($avg), 2))), 2) lt 1.0" # 大写字母开头的函数为重写的映射函数, 小写的为python自带函数
+    value: "round(Mean(Last(3, Round(Float($avg), 2))), 2) lt 1.0" # 大写字母开头的函数为重写的映射函数, 小写的为python自带函数或1to1函数
   many_values:
     value: "Head(5, $min) > 1.5"
   code_rule:
