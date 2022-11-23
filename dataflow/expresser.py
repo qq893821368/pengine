@@ -74,11 +74,11 @@ class LeftExpression:
         return self.function(*args)
 
 
-class Ruler:
+class Expression:
     """
-    A Ruler obj initializes with a raw rule expression string.
+    An Expression obj initializes with a raw rule expression string.
 
-    Ruler obj will recognize expression automatically to parse it into a LeftExpression obj, an operator obj
+    Expression obj will recognize expression automatically to parse it into a LeftExpression obj, an operator obj
     and a value, it checks whether the data matches the rule by calling the method `compare` of operator obj.
     """
     def __init__(self, expr: str):

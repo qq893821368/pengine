@@ -10,6 +10,7 @@ action: "placeholder" # 告警时的动作，暂时没想好怎么把产生的�
 silent: # List[str] 静默时间段
   - "02:00-04:00"
   - "05:00-05:30"
+  - "16:40-16:45"
 
 database: # 数据库配置
   url: "http://localhost:8086" # influxdb的url
@@ -33,16 +34,21 @@ resultset: # 查询结果配置
 
 rule:
   one: # 规则名
-    type: "expr" # str 规则类型，expr表达式，code可执行py代码，默认为表达式
+    type: "expr" # str 规则类型，expr表达式，lambda, proc为可执行py代码，lambda单行，proc多行，默认类型为表达式
     value: "Avg($loss_rate) lte 5.0" # $variable取数据中的某个字段，用嵌套函数包围做映射，例如求均值、最值等，后接表达式及阈值，形成A expr B的形式表达一个条件
   complex:
-    value: "round(Mean(Last(3, Round(Float($avg), 2))), 2) lt 1.0" # 大写字母开头的函数为重写的映射函数, 小写的为python自带函数或1to1函数
+    value: "round(Mean(Last(3,Round(Float($avg),2))),2) lt 1.0" # 大写字母开头的函数为重写的映射函数, 小写的为python自带函数或1to1函数
   many_values:
-    value: "Head(5, $min) > 1.5"
-  code_rule:
-    type: "code"
+    value: "Head(5,$min) > 1.5"
+  lambda_rule:
+    type: "lambda"
     value: | # 此处取上一次产生告警的ttl值与本次数据的ttl值对比，若本次数据ttl更大才算匹配成功
       False not in Alerty.cur_episode['ttl'].map(lambda x: int(x) > Alerty.prev_alert("$[name]").get("ttl", 0))
+  proc_rule:
+    type: "proc"
+    value: | # 将lambda规则改写成proc格式，proc支持多行代码
+      ttl_result = Alerty.cur_episode['ttl'].map(lambda x: int(x) > Alerty.prev_alert("$[name]").get("ttl", 0))
+      return False not in ttl_result
 
 alert:
   a:

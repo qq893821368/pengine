@@ -47,7 +47,7 @@ class Equals(Matcher):
             return False not in (x == y for x, y in zip(left, right))
 
 
-class NEquals(Matcher):
+class NEquals(Equals):
     _opname_: str = "NotEquals"
 
     @staticmethod
@@ -212,9 +212,6 @@ class EndsWith(Matcher):
         else:
             tail_n = left[-len(right):]
             return False not in (x == y for x, y in zip(tail_n, right))
-
-
-# todo more matchers
 
 
 def create_matcher(op: str) -> Matcher:
