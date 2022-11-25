@@ -1,0 +1,4 @@
+def fuck(x):
+    return x**2
+Alerty["before"] = fuck(Alerty.get("before", 2))
+return 1
