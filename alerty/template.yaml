@@ -33,11 +33,11 @@ resultset: # 查询结果配置
     - ttl
 
 rule:
-  one: # 规则名
+  simple: # 规则名
     type: "expr" # str 规则类型，expr表达式，lambda, proc为可执行py代码，lambda单行，proc多行，默认类型为表达式
     value: "Avg($loss_rate) lte 5.0" # $variable取数据中的某个字段，用嵌套函数包围做映射，例如求均值、最值等，后接表达式及阈值，形成A expr B的形式表达一个条件
   complex:
-    value: "round(Mean(Last(3,Round(Float($avg),2))),2) lt 1.0" # 大写字母开头的函数为重写的映射函数, 小写的为python自带函数或1to1函数
+    value: "round(Mean(Last(3,Round(Float($avg),2))),2) neq 1.0" # 大写字母开头的函数为重写的映射函数, 小写的为python自带函数或1to1函数
   many_values:
     value: "Head(5,$min) > 1.5"
   lambda_rule:
@@ -49,6 +49,11 @@ rule:
     value: | # 将lambda规则改写成proc格式，proc支持多行代码
       ttl_result = Alerty.cur_episode['ttl'].map(lambda x: int(x) > Alerty.prev_alert("$[name]").get("ttl", 0))
       return False not in ttl_result
+  interrupt_signal:
+    value: "Tail(3,$loss_rate) gte 100.0"
+  ttl_check:
+    type: "lambda"
+    value: 'False not in Alerty.cur_episode["ttl"].map(lambda x: int(x) > Alerty.prev_alert("$[name]").get("ttl", 0))'
 
 alert:
   a:
@@ -61,7 +66,18 @@ alert:
       Alerty.option("before") = 123
     after: |  # str 在生成告警之后运行的py代码
       Alerty.current_alert("$[name]")["content"]["after"] = 321
-    trigger: "one & (complex | many_values) | code_rule" # 告警的触发条件，对规定好的规则进行运算表达
+    trigger: "simple & (complex | many_values) | code_rule" # 告警的触发条件，对规定好的规则进行运算表达
+    # 结果序列模式，为了能以统一流程处理，查询出的数据总会被处理成groupby后的形式
+    # T: 不分组，trigger结果为True
+    # F：不分组，trigger结果为False
+    # *T：分组，分组后的数据经trigger后最后一组为True
+    # *F：分组，分组后的数据经trigger后最后一组为False
+    # *T*：分组，分组后的数据经trigger后存在一组为True
+    # *F*：分组，分组后的数据经trigger后存在一组为False
+    # *T*F：分组，分组后的数据经trigger后，最后一组为False且其余组存在一组为True
+    # *F*T：分组，分组后的数据经trigger后，最后一组为True且其余组存在一组为False
+    # 默认为T，即不分组并匹配trigger后为True
+    result: "*T*"
   b:
     level: err # str 告警等级 emerg, alert, crit, err, warning, notice, info, debug
     priority: 0x3 # int 告警优先级，决定告警实际的等级，在该告警中优先级越小的越优先被告警，且抑制优先级更大的
@@ -72,4 +88,10 @@ alert:
       Alerty.option("before") = 123
     after: |  # str 在生成告警之后运行的py代码
       Alerty.current_alert("$[name]")["content"]["after"] = 321
-    trigger: "(complex | many_values) & code_rule" # 告警的触发条件，对规定好的规则进行运算表达
+    trigger: "(complex | many_values) | code_rule" # 告警的触发条件，对规定好的规则进行运算表达
+  interrupt_alert:
+    level: err
+    priority: 0x1
+    message: ""
+    trigger: "interrupt_signal"
+    result: "*T"

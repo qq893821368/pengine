@@ -118,6 +118,9 @@ class Expression:
     def __str__(self):
         return " ".join((self.left_expression, self.operator, self.value))
 
+    def __call__(self, *args, **kwargs):
+        return self.match(*args, **kwargs)
+
     def match(self, data):
         return self.op.compare(self._lexpr_.map(data), self._rexpr_)
 
