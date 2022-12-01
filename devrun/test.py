@@ -80,4 +80,11 @@ def op_test():
         print(Alerty)
 
 
-op_test()
+def plugin_test():
+    from util import plugin
+    from plugin import test
+    test = plugin.Plugin(test.__name__, test.export())
+    print(test.PI, test.__name__)
+
+
+plugin_test()
