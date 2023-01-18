@@ -34,8 +34,9 @@ drop_cols = resultset_cnf.pop("drop", None)
 groupby_cols = resultset_cnf.pop("groupby", None)
 data = data.drop(columns=drop_cols) if drop_cols is not None else data
 data = data.groupby(by=groupby_cols) if groupby_cols is not None else (("default", data),)
+# 没有设置groupby的索引列则将整个数据分为一组，索引为default
 
-print(data)  # 此处data会由于groupby的设置与否而确定为不同的类型，无groupby则为DataFrame，有groupby则为GroupBy
+print(data)
 
 # rule
 ruleset = cnf.pop("rule", {})
